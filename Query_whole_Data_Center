@@ -1,0 +1,46 @@
+DECLARE @ServerName VARCHAR(50)
+DECLARE @DynamicSQL NVARCHAR(MAX)
+DECLARE @SQLStatement NVARCHAR(1000) SET @SQLStatement = 'SELECT * FROM #TempTable;DROP TABLE #TempTable';
+DECLARE @myTableVariable TABLE (id INT, ServerName VARCHAR(50)) INSERT INTO @myTableVariable VALUES
+/** -- Add your SQL Server list here **/
+(1, 'TESLABSQL01T'), 
+(2, 'TESLABSQL02T') 
+
+
+SELECT TOP 0 @@servername AS ServerName, *
+INTO #TempTable
+FROM sys.databases
+
+DECLARE VarCursor CURSOR
+FOR
+SELECT ServerName
+FROM @myTableVariable
+
+OPEN VarCursor
+
+FETCH NEXT
+FROM VarCursor
+INTO @ServerName
+
+WHILE @@FETCH_STATUS = 0
+BEGIN 
+	SET @DynamicSQL = '
+	insert  INTO  #TempTable
+	SELECT ''' + @ServerName + ''' AS [ServerName],*
+    FROM OPENDATASOURCE(''MSOLEDBSQL'', ''Server=' + @ServerName + ';TrustServerCertificate=Yes;Trusted_Connection=Yes;'').master.sys.databases '
+
+	EXEC (@DynamicSQL)
+
+	FETCH NEXT
+	FROM VarCursor
+	INTO @ServerName
+
+	
+END
+
+CLOSE VarCursor
+
+DEALLOCATE VarCursor
+
+EXEC sp_executesql @SQLStatement;
+
