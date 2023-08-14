@@ -1,0 +1,3 @@
+// https://techcommunity.microsoft.com/t5/azure-database-support-blog/lesson-learned-392-querying-extended-events-and-sending-results/ba-p/3864845
+
+This is long to setup 
